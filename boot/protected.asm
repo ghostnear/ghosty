@@ -9,16 +9,16 @@ switch_to_protected_mode:
 
 [bits 32]
 init_protected_mode:
-    mov ax, DATA_SEG    ;
-    mov ds, ax          ;
-    mov ss, ax          ;
-    mov es, ax          ;
-    mov fs, ax          ;
-    mov gs, ax          ; update segment registers
-    mov ebp, 0x90000    ;
-    mov esp, ebp        ; set up the stack at the top of the free space
-    call KERNEL_OFFSET  ; give control to the kernel
-    jmp $               ; infinite loop (for safety)
+    mov ax, DATA_SEG                  ;
+    mov ds, ax                        ;
+    mov ss, ax                        ;
+    mov es, ax                        ;
+    mov fs, ax                        ;
+    mov gs, ax                        ; update segment registers
+    mov ebp, 0x90000                  ;
+    mov esp, ebp                      ; set up the stack at the top of the free space
+    call KERNEL_OFFSET                ; give control to the kernel
+    jmp $                             ; infinite loop (for safety)
 
 ; include the GDT
 %include 'boot/gdt.asm'

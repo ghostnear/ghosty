@@ -1,21 +1,14 @@
-; TODO: comment this code properly
 ; prints the string at the adress [bx]
 print_string:
     pusha
-; the comparison for string end (null byte)
 start:
-    mov al, [bx] ; 'bx' is the base address for the string
-    cmp al, 0
-    je done
-
-    ; the part where we print with the BIOS help
-    mov ah, 0x0e
-    int 0x10 ; 'al' already contains the char
-
-    ; increment pointer and do next loop
-    add bx, 1
-    jmp start
-
+    mov al, [bx]    ; save the byte to the printing register
+    cmp al, 0       ; check if the byte pointed by bx is null
+    je done         ; and jump accordingly
+    mov ah, 0x0e    ; ah has the command code for printing
+    int 0x10        ; send the command to the BIOS
+    add bx, 1       ;
+    jmp start       ; advance and go to the next step
 done:
     popa
     ret
@@ -23,13 +16,11 @@ done:
 ; prints a newline
 print_nl:
     pusha
-
-    mov ah, 0x0e
-    mov al, 0x0a ; newline char
-    int 0x10
-    mov al, 0x0d ; carriage return
-    int 0x10
-
+    mov ah, 0x0e    ; prepare the command
+    mov al, 0x0a    ; newline char
+    int 0x10        ; raise interrupt
+    mov al, 0x0d    ; carriage return
+    int 0x10        ; raise interrupt again
     popa
     ret
 
@@ -37,45 +28,32 @@ print_nl:
 ; receiving the data in 'dx'
 print_hex:
     pusha
-
-    mov cx, 0 ; our index variable
-
-; Strategy: get the last char of 'dx', then convert to ASCII
-; Numeric ASCII values: '0' (ASCII 0x30) to '9' (0x39), so just add 0x30 to byte N.
-; For alphabetic characters A-F: 'A' (ASCII 0x41) to 'F' (0x46) we'll add 0x40
-; Then, move the ASCII byte to the correct position on the resulting string
+    mov cx, 0           ; index in the result string
 hex_loop:
-    cmp cx, 4 ; loop 4 times
-    je end
-
-    ; 1. convert last char of 'dx' to ascii
-    mov ax, dx ; we will use 'ax' as our working register
-    and ax, 0x000f ; 0x1234 -> 0x0004 by masking first three to zeros
-    add al, 0x30 ; add 0x30 to N to convert it to ASCII "N"
-    cmp al, 0x39 ; if > 9, add extra 8 to represent 'A' to 'F'
-    jle step2
-    add al, 7 ; 'A' is ASCII 65 instead of 58, so 65-58=7
+    cmp cx, 4           ;
+    je end              ; end after 4 loops
+    mov ax, dx          ; we will use 'ax' as our working register
+    and ax, 0x000f      ; get only the last hex digit stored
+    add al, 0x30        ; add '0' to make it an ASCII character
+    cmp al, 0x39        ;
+    jle step2           ; if <= 9 we can go directly to saving it
+    add al, 7           ; if > 9 we add 7 to fix the offset
 
 step2:
-    ; 2. get the correct position of the string to place our ASCII char
-    ; bx <- base address + string length - index of char
-    mov bx, HEX_OUT + 5 ; base + length
-    sub bx, cx  ; our index variable
-    mov [bx], al ; copy the ASCII char on 'al' to the position pointed by 'bx'
-    ror dx, 4 ; 0x1234 -> 0x4123 -> 0x3412 -> 0x2341 -> 0x1234
-
-    ; increment index and loop
-    add cx, 1
-    jmp hex_loop
+    mov bx, HEX_OUT + 5 ; get adress of the end of the string
+    sub bx, cx          ; subtract the index
+    mov [bx], al        ; set the value at that adress to our result
+    ror dx, 4           ; rotate the number to get access to the next digit
+                        ; ! digits are in the opposite order, that's why the index is subtracted instead of used !
+    add cx, 1           ;
+    jmp hex_loop        ; go to the next step
 
 end:
-    ; prepare the parameter and call the function
-    ; remember that print receives parameters in 'bx'
-    mov bx, HEX_OUT
-    call print_string
-
+    mov bx, HEX_OUT     ; move the adress of the string to bx
     popa
+    call print_string   ; because the function prints the string at the adress of bx
     ret
 
+; data
 HEX_OUT:
     db '0x0000',0 ; reserve memory for our new string

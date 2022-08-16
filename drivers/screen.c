@@ -1,5 +1,6 @@
-#include "ports.h"
 #include "screen.h"
+#include "../cpu/ports.h"
+#include "../libc/mem.h"
 
 /* Kernel private API */
 i32 get_cursor_offset();
@@ -16,7 +17,7 @@ i32 print_char(i8 c, i32 col, i32 row, i8 attr);
 void kprint_at(i8* message, i32 col, i32 row)
 {
     i32 offset;
-    // If any of the coords are negatibe, replace them with the current ones.
+    // If any of the coords are negative, replace them with the current ones.
     if(col < 0 || row < 0)
     {
         offset = get_cursor_offset();
@@ -40,25 +41,30 @@ void kprint(i8* message)
     kprint_at(message, -1, -1);
 }
 
+// This removes only the last character written
+void kprint_backspace()
+{
+    int offset = get_cursor_offset() - 2;
+    print_char(
+      0x08,
+      get_offset_row(offset),
+      get_offset_col(offset),
+      WHITE_ON_BLACK
+    );
+}
+
 // Clear the screen by setting it to spaces.
 void clear_screen()
 {
-  i8 *screen = (i8*) VIDEO_ADDRESS;
-  for(i32 i = 0; i < MAX_COLS * MAX_ROWS; i++)
-  {
-      screen[i * 2] = ' ';
-      screen[i * 2 + 1] = WHITE_ON_BLACK;
-  }
+    i8 *screen = (i8*) VIDEO_ADDRESS;
+    for(i32 i = 0; i < MAX_COLS * MAX_ROWS; i++)
+    {
+        screen[i * 2] = ' ';
+        screen[i * 2 + 1] = WHITE_ON_BLACK;
+    }
 
-  // Set cursor to top left
-  set_cursor_offset(get_offset(0, 0));
-}
-
-// Copy bytes from one source to another
-void memory_copy(i8* src, i8* dest, i32 num)
-{
-    for(i32 i = 0; i < num; i++)
-      dest[i] = src[i];
+    // Set cursor to top left
+    set_cursor_offset(get_offset(0, 0));
 }
 
 /*
@@ -76,23 +82,25 @@ i32 print_char(i8 c, i32 col, i32 row, i8 attr)
 
     // Get offset if the coords are positive
     i32 offset;
-    if (col >= 0 && row >= 0) offset = get_offset(col, row);
+    if(col >= 0 && row >= 0) offset = get_offset(col, row);
     else offset = get_cursor_offset();
 
     // Treat special chars separately
     switch(c)
     {
-        // Unprintable, ignore
-        case 0:
-          break;
-
         // Move to the next line
         case '\n':
           row = get_offset_row(offset);
           offset = get_offset(0, row + 1);
           break;
 
-        // Default - print
+        // Backspace
+        case 0x08:
+          vidmem[offset] = ' ';
+          vidmem[offset + 1] = attr;
+          break;
+
+        // Other (probably) printable characters
         default:
           vidmem[offset++] = c;
           vidmem[offset++] = attr;
@@ -105,9 +113,9 @@ i32 print_char(i8 c, i32 col, i32 row, i8 attr)
         // Move everything up one line
         for(i32 i = 1; i < MAX_ROWS; i++)
         {
-            memory_copy(
-              (i8*)(get_offset(0, i) + VIDEO_ADDRESS),
-              (i8*)(get_offset(0, i - 1) + VIDEO_ADDRESS),
+            memcpy(
+              (u8*)(get_offset(0, i - 1) + VIDEO_ADDRESS),
+              (u8*)(get_offset(0, i) + VIDEO_ADDRESS),
               MAX_COLS * 2
             );
         }
@@ -137,7 +145,7 @@ i32 get_cursor_offset()
 
     // Read lower byte
     port_byte_out(REG_SCREEN_CTRL, 15);
-    offset &= port_byte_in(REG_SCREEN_DATA);
+    offset += port_byte_in(REG_SCREEN_DATA);
 
     // Return the offset (position * size of character cell)
     return offset * 2;

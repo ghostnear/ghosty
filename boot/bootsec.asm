@@ -18,7 +18,7 @@ jmp $                         ; infinite loop (for safety)
 
 ; data
 BOOT_DRIVE: db 0
-MESSAGE_REAL_MODE: db 'Entering 16-bit real mode...', 0
+MESSAGE_REAL_MODE: db 'Entering 16-bit mode...', 0
 
 times 510-($-$$) db 0   ; byte padding so we are sure to have 512 bytes
 dw 0xaa55               ; magic number as the last 2 bytes
