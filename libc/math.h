@@ -3,6 +3,6 @@
 
 #include "../cpu/types.h"
 
-i32 sgn(i32 n);
+int32_t sgn(int32_t n);
 
 #endif

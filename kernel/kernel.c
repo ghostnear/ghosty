@@ -18,7 +18,7 @@ void kernel_main()
     kprint("Typing END will halt the CPU.\n> ");
 }
 
-void on_user_input(char *input)
+void on_user_input(int8_t *input)
 {
     // Stop the CPU on END
     if(!strcmp(input, "END"))

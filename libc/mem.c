@@ -1,13 +1,13 @@
 #include "mem.h"
 
-void memcpy(u8 *dest, u8 *src, i32 n)
+void memcpy(uint8_t *dest, uint8_t *src, int32_t n)
 {
-    for(i32 i = 0; i < n; i++)
+    for(int32_t i = 0; i < n; i++)
         dest[i] = src[i];
 }
 
-void memset(u8* dest, u8 val, i32 len)
+void memset(uint8_t* dest, uint8_t val, int32_t len)
 {
-    for(i32 i = 0; i < len; i++)
+    for(int32_t i = 0; i < len; i++)
         dest[i] = val;
 }

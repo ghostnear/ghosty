@@ -1,29 +1,29 @@
 #include "ports.h"
 
 // Read a byte from the specified port
-u8 port_byte_in(u16 port)
+uint8_t port_byte_in(uint16_t port)
 {
-    u8 result;
+    uint8_t result;
     asm("in %%dx, %%al" : "=a" (result) : "d" (port));
     return result;
 }
 
 // Send a byte to the specified port
-void port_byte_out(u16 port, u8 data)
+void port_byte_out(uint16_t port, uint8_t data)
 {
     asm("out %%al, %%dx" : : "a" (data), "d" (port));
 }
 
 // Read a word from the specified port
-u16 port_word_in(u16 port)
+uint16_t port_word_in(uint16_t port)
 {
-    unsigned short result;
+    uint16_t result;
     asm("in %%dx, %%ax" : "=a" (result) : "d" (port));
     return result;
 }
 
 // Send a word to the specified port
-void port_word_out(u16 port, u16 data)
+void port_word_out(uint16_t port, uint16_t data)
 {
     asm("out %%ax, %%dx" : : "a" (data), "d" (port));
 }

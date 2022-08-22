@@ -1,16 +1,16 @@
 #ifndef LIBC_STRING_H
 #define LIBC_STRING_H
 
-#include "../cpu/types.h"
+  #include "../cpu/types.h"
 
-void itoa(i32 n, i8* str);
+  void itoa(int32_t n, char* str);
 
-// String functions.
-i32 strlen(i8* str);
-i32 strcmp(i8* a, i8* b);
-void strapp(i8* str, i8 ch);
-void strrev(i8* str);
-void strtrn(i8* str);
-void strntrn(i8* str, i32 n);
+  // String functions.
+  int32_t strlen(char* str);
+  int32_t strcmp(char* a, char* b);
+  void strapp(char* str, char ch);
+  void strrev(char* str);
+  void strtrn(char* str);
+  void strntrn(char* str, int32_t n);
 
 #endif

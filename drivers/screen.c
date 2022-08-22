@@ -3,20 +3,20 @@
 #include "../libc/mem.h"
 
 /* Kernel private API */
-i32 get_cursor_offset();
-void set_cursor_offset(i32 offset);
-i32 get_offset(i32 col, i32 row);
-i32 get_offset_row(i32 offset);
-i32 get_offset_col(i32 offset);
-i32 print_char(i8 c, i32 col, i32 row, i8 attr);
+int32_t get_cursor_offset();
+void set_cursor_offset(int32_t offset);
+int32_t get_offset(int32_t col, int32_t row);
+int32_t get_offset_row(int32_t offset);
+int32_t get_offset_col(int32_t offset);
+int32_t print_char(int8_t c, int32_t col, int32_t row, int8_t attr);
 
 /*
 * Print a message at the specified position.
 * If the coords are negative, we will be using the current offset.
 */
-void kprint_at(i8* message, i32 col, i32 row)
+void kprint_at(char* message, int32_t col, int32_t row)
 {
-    i32 offset;
+    int32_t offset;
     // If any of the coords are negative, replace them with the current ones.
     if(col < 0 || row < 0)
     {
@@ -27,7 +27,7 @@ void kprint_at(i8* message, i32 col, i32 row)
     offset = get_offset(col, row);
 
     /* Loop through message and print it */
-    for(int i = 0; message[i]; i++)
+    for(int32_t i = 0; message[i]; i++)
     {
         offset = print_char(message[i], col, row, WHITE_ON_BLACK);
         row = get_offset_row(offset);
@@ -36,7 +36,7 @@ void kprint_at(i8* message, i32 col, i32 row)
 }
 
 // This is a particular case of kprint_at()
-void kprint(i8* message)
+void kprint(char* message)
 {
     kprint_at(message, -1, -1);
 }
@@ -44,7 +44,7 @@ void kprint(i8* message)
 // This removes only the last character written
 void kprint_backspace()
 {
-    int offset = get_cursor_offset() - 2;
+    int32_t offset = get_cursor_offset() - 2;
     print_char(
       0x08,
       get_offset_row(offset),
@@ -56,8 +56,8 @@ void kprint_backspace()
 // Clear the screen by setting it to spaces.
 void clear_screen()
 {
-    i8 *screen = (i8*) VIDEO_ADDRESS;
-    for(i32 i = 0; i < MAX_COLS * MAX_ROWS; i++)
+    int8_t *screen = (int8_t*) VIDEO_ADDRESS;
+    for(int32_t i = 0; i < MAX_COLS * MAX_ROWS; i++)
     {
         screen[i * 2] = ' ';
         screen[i * 2 + 1] = WHITE_ON_BLACK;
@@ -71,17 +71,17 @@ void clear_screen()
 * Prints a character with the specified attributes to the location.
 * Doesn't print anything if the location is invalid.
 */
-i32 print_char(i8 c, i32 col, i32 row, i8 attr)
+int32_t print_char(int8_t c, int32_t col, int32_t row, int8_t attr)
 {
     // Get a pointer to the VRAM
-    u8 *vidmem = (u8*) VIDEO_ADDRESS;
+    uint8_t *vidmem = (uint8_t*) VIDEO_ADDRESS;
 
     /* Error control */
     if(!attr) attr = WHITE_ON_BLACK;
     if(col >= MAX_COLS || row >= MAX_ROWS) return -1;
 
     // Get offset if the coords are positive
-    i32 offset;
+    int32_t offset;
     if(col >= 0 && row >= 0) offset = get_offset(col, row);
     else offset = get_cursor_offset();
 
@@ -111,18 +111,18 @@ i32 print_char(i8 c, i32 col, i32 row, i8 attr)
     if(offset >= MAX_ROWS * MAX_COLS * 2)
     {
         // Move everything up one line
-        for(i32 i = 1; i < MAX_ROWS; i++)
+        for(int32_t i = 1; i < MAX_ROWS; i++)
         {
             memcpy(
-              (u8*)(get_offset(0, i - 1) + VIDEO_ADDRESS),
-              (u8*)(get_offset(0, i) + VIDEO_ADDRESS),
+              (uint8_t*)(get_offset(0, i - 1) + VIDEO_ADDRESS),
+              (uint8_t*)(get_offset(0, i) + VIDEO_ADDRESS),
               MAX_COLS * 2
             );
         }
 
         // Make last line is empty
-        i8 *last_line = (i8*)(get_offset(0, MAX_ROWS - 1) + VIDEO_ADDRESS);
-        for(i32 i = 0; i < MAX_COLS * 2; i++) last_line[i] = 0;
+        int8_t *last_line = (int8_t*)(get_offset(0, MAX_ROWS - 1) + VIDEO_ADDRESS);
+        for(int32_t i = 0; i < MAX_COLS * 2; i++) last_line[i] = 0;
 
         offset -= 2 * MAX_COLS;
     }
@@ -137,11 +137,11 @@ i32 print_char(i8 c, i32 col, i32 row, i8 attr)
 * 1. Ask for high byte of the cursor offset (data 14)
 * 2. Ask for low byte (data 15)
 */
-i32 get_cursor_offset()
+int32_t get_cursor_offset()
 {
     // Read high byte
     port_byte_out(REG_SCREEN_CTRL, 14);
-    i32 offset = port_byte_in(REG_SCREEN_DATA) << 8;
+    int32_t offset = port_byte_in(REG_SCREEN_DATA) << 8;
 
     // Read lower byte
     port_byte_out(REG_SCREEN_CTRL, 15);
@@ -152,16 +152,16 @@ i32 get_cursor_offset()
 }
 
 // Similar to getting but we only write data
-void set_cursor_offset(i32 offset)
+void set_cursor_offset(int32_t offset)
 {
     offset /= 2;
     port_byte_out(REG_SCREEN_CTRL, 14);
-    port_byte_out(REG_SCREEN_DATA, (u8)(offset >> 8));
+    port_byte_out(REG_SCREEN_DATA, (uint8_t)(offset >> 8));
     port_byte_out(REG_SCREEN_CTRL, 15);
-    port_byte_out(REG_SCREEN_DATA, (u8)(offset & 0xff));
+    port_byte_out(REG_SCREEN_DATA, (uint8_t)(offset & 0xff));
 }
 
 // TODO: maybe replace with macros
-i32 get_offset(i32 col, i32 row) { return 2 * (row * MAX_COLS + col); }
-i32 get_offset_row(i32 offset) { return offset / (2 * MAX_COLS); }
-i32 get_offset_col(i32 offset) { return (offset - (get_offset_row(offset)*2*MAX_COLS))/2; }
+int32_t get_offset(int32_t col, int32_t row) { return 2 * (row * MAX_COLS + col); }
+int32_t get_offset_row(int32_t offset) { return offset / (2 * MAX_COLS); }
+int32_t get_offset_col(int32_t offset) { return (offset - (get_offset_row(offset)*2*MAX_COLS))/2; }

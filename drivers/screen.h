@@ -17,8 +17,8 @@
 
   // Kernel public API
   void clear_screen();
-  void kprint_at(i8* message, i32 col, i32 row);
-  void kprint(i8* message);
+  void kprint_at(char* message, int32_t col, int32_t row);
+  void kprint(char* message);
   void kprint_backspace();
 
 #endif

@@ -3,7 +3,7 @@
 
 #include "../cpu/types.h"
 
-void memcpy(u8 *dest, u8 *src, i32 n);
-void memset(u8* dest, u8 val, i32 len);
+void memcpy(uint8_t *dest, uint8_t *src, int32_t n);
+void memset(uint8_t* dest, uint8_t val, int32_t len);
 
 #endif
