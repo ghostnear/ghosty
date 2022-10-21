@@ -29,6 +29,7 @@ void on_user_input(int8_t *input)
     else if(!strcmp(input, "CLEAR"))
     {
         clear_screen();
+        kprint("> ");
     }
     else
     {

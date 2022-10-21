@@ -164,4 +164,4 @@ void set_cursor_offset(int32_t offset)
 // TODO: maybe replace with macros
 int32_t get_offset(int32_t col, int32_t row) { return 2 * (row * MAX_COLS + col); }
 int32_t get_offset_row(int32_t offset) { return offset / (2 * MAX_COLS); }
-int32_t get_offset_col(int32_t offset) { return (offset - (get_offset_row(offset)*2*MAX_COLS))/2; }
+int32_t get_offset_col(int32_t offset) { return (offset - (get_offset_row(offset) * 2 * MAX_COLS)) / 2; }

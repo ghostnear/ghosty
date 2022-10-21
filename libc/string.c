@@ -72,6 +72,7 @@ int32_t strcmp(char* a, char* b)
 int32_t strlen(char* str)
 {
     int32_t r = 0;
-    while(str[r++]);
+    while(str[r])
+        r++;
     return r;
 }

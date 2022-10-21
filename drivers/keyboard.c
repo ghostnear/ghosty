@@ -28,15 +28,23 @@ static void keyboard_callback(registers_t regs)
     /* The PIC leaves us the scancode in port 0x60 */
     uint8_t scancode = port_byte_in(0x60);
 
-    if (scancode > SC_MAX) return;
-    if (scancode == BACKSPACE) {
-        strtrn(key_buffer);
-        kprint_backspace();
-    } else if (scancode == ENTER) {
+    if(scancode > SC_MAX) return;
+    if(scancode == BACKSPACE)
+    {
+        if(strlen(key_buffer) > 0)
+        {
+            strtrn(key_buffer);
+            kprint_backspace();
+        }
+    }
+    else if(scancode == ENTER)
+    {
         kprint("\n");
         on_user_input(key_buffer); /* kernel-controlled function */
         key_buffer[0] = '\0';
-    } else {
+    } 
+    else
+    {
         int8_t letter = sc_ascii[(int32_t)scancode];
         /* Remember that kprint only accepts char[] */
         int8_t str[2] = {letter, '\0'};
