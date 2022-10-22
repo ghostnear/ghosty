@@ -44,13 +44,7 @@ void kprint(char* message)
 // This removes only the last character written
 void kprint_backspace()
 {
-    int32_t offset = get_cursor_offset() - 2;
-    print_char(
-      0x08,
-      get_offset_row(offset),
-      get_offset_col(offset),
-      WHITE_ON_BLACK
-    );
+    print_char(0x08, -1, -1, WHITE_ON_BLACK);
 }
 
 // Clear the screen by setting it to spaces.
@@ -96,6 +90,9 @@ int32_t print_char(int8_t c, int32_t col, int32_t row, int8_t attr)
 
         // Backspace
         case 0x08:
+          col = get_offset_col(offset);
+          row = get_offset_row(offset);
+          offset = get_offset(col - 1, row);
           vidmem[offset] = ' ';
           vidmem[offset + 1] = attr;
           break;
