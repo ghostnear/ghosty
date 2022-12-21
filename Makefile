@@ -2,15 +2,19 @@
 C_SOURCES = $(wildcard kernel/*.c drivers/*.c cpu/*.c libc/*.c)
 C_HEADERS = $(wildcard kernel/*.h drivers/*.h cpu/*.h libc/*.h)
 
+V_SOURCES = $(wildcard kernel/*.v drivers/*.v cpu/*.v libc/*.v)
+
 # Nice syntax for file extension replacement
 OBJ = ${C_SOURCES:.c=.o cpu/interrupt.o}
 
 # Change this if your cross-compiler is somewhere else
+V = v
 CC = i386-elf-gcc
 GDB = i386-elf-gdb
 
 # -g: Debugging symbols in gcc
 C_FLAGS = -g -ffreestanding -Wall -Wextra -fno-exceptions -m32
+V_FLAGS = -os vinix -shared -gc none
 
 # Default rule
 os-image.bin: boot/bootsec.bin kernel.bin
@@ -35,6 +39,9 @@ debug: os-image.bin kernel.elf
 
 # Generic rules for wildcards
 # To make an object, always compile from its .c
+%.o: %.v
+	${V} ${V_FLAGS} $< -o $@
+
 %.o: %.c ${C_HEADERS}
 	${CC} ${C_FLAGS} -c $< -o $@
 
